@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camera and Download</title>
+<style>
+    #camera-preview {
+        width: 300px;
+        height: 300px;
+        border: 2px solid black;
+        margin-bottom: 20px;
+    }
+</style>
+</head>
+<body>
+
+<h1>Camera and Download</h1>
+
+<!-- Camera preview area -->
+<video id="camera-preview" autoplay muted></video>
+
+<!-- Capture button -->
+<button onclick="capturePhoto()">Capture Photo</button>
+
+<!-- Download button -->
+<a id="download-link" download="photo.jpg" style="display: none;">Download Photo</a>
+
+<script>
+    // Get the video element for camera preview
+    const videoElement = document.getElementById('camera-preview');
+
+    // Get the canvas element for capturing the photo
+    const canvasElement = document.createElement('canvas');
+    canvasElement.width = 300;
+    canvasElement.height = 300;
+    const canvasContext = canvasElement.getContext('2d');
+
+    // Access the user's camera
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+            videoElement.srcObject = stream;
+        })
+        .catch(function(error) {
+            console.error('Error accessing the camera:', error);
+        });
+
+    // Function to capture photo
+    function capturePhoto() {
+        // Draw the current frame from the camera onto the canvas
+        canvasContext.drawImage(videoElement, 0, 0, 300, 300);
+
+        // Convert the canvas image to a data URL
+        const dataUrl = canvasElement.toDataURL('image/jpeg');
+
+        // Update the download link with the captured photo data URL
+        const downloadLink = document.getElementById('download-link');
+        downloadLink.href = dataUrl;
+
+        // Show the download link and trigger download
+        downloadLink.style.display = 'block';
+        downloadLink.click();
+    }
+</script>
+
+</body>
+</html>
