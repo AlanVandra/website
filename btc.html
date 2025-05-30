@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>3D Pokémon Cards - Forest Scenery Fixed</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;700&display=swap');
+
+  /* Background: cartoon forest scenery */
+  body {
+    margin: 0;
+    min-height: 100vh;
+    /* Replaced background URL with a reliable cartoon forest image with open license */
+    background: url("comic-cartoon-blue-background-with-cloud_530597-1665.webp") no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem;
+    font-family: 'Fira Sans', sans-serif;
+    color: #fff;
+  }
+
+  /* Container for cards grid */
+  .cards-container {
+    max-width: 1280px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 2rem;
+    padding-bottom: 3rem;
+    overflow-y: auto;
+    max-height: 90vh;
+  }
+
+  .scene {
+    width: 240px;
+    height: 340px;
+    perspective: 1000px;
+  }
+
+  .card {
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    background: #000000bb; /* fallback dark background for reading */
+    user-select: none;
+  }
+
+  .card.is-flipped {
+    transform: rotateY(180deg);
+  }
+
+  .card__face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: inset 0 0 20px #00000099;
+  }
+
+  .card__face--front {
+    background: linear-gradient(135deg, #f7931a, #f5a623);
+    box-shadow: inset 0 0 40px #fff3c1aa;
+    align-items: center;
+    padding: 12px 16px;
+    box-sizing: border-box;
+    justify-content: center;
+  }
+
+  .card__face--front img {
+    width: 70%;
+    height: auto;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 3px 3px rgba(0,0,0,0.3));
+  }
+
+  .card__face--front h2 {
+    font-size: 1.6rem;
+    margin: 0;
+    text-shadow: 0 0 8px #fff9c0;
+    user-select: text;
+  }
+
+  .card__face--front .type {
+    margin-top: 6px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 3px 12px;
+    border-radius: 16px;
+    text-transform: uppercase;
+    align-self: center;
+    box-shadow: 0 0 10px #ffcf66aa;
+    background: #ffa726;
+    user-select: text;
+  }
+
+  .card__face--back {
+    background: #1c1f26;
+    color: #eee;
+    transform: rotateY(180deg);
+    padding: 16px 18px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .stats {
+    margin-top: 8px;
+  }
+
+  .stats h3 {
+    margin: 0 0 8px 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border-bottom: 2px solid #f7931a;
+    padding-bottom: 4px;
+    color: #f7931a;
+    text-shadow: 0 0 6px #ffb84d;
+  }
+
+  .stat {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-weight: 600;
+    user-select: text;
+  }
+
+  .stat-bar {
+    height: 6px;
+    background: #444;
+    border-radius: 5px;
+    overflow: hidden;
+    flex-grow: 1;
+    margin-left: 8px;
+    box-shadow: inset 0 0 6px #222;
+  }
+
+  .stat-bar__fill {
+    height: 100%;
+    background: #f7931a;
+    transition: width 0.6s ease;
+  }
+
+  /* Pokemon type colors - add more as needed */
+  .type-fire { background: #ff6b6b; box-shadow: 0 0 10px #ff6b6baa; }
+  .type-water { background: #4da6ff; box-shadow: 0 0 10px #4da6ffaa; }
+  .type-grass { background: #7cd37c; box-shadow: 0 0 10px #7cd37caa; }
+  .type-electric { background: #f7e65d; color: #333; box-shadow: 0 0 10px #f7e65daa; }
+  .type-psychic { background: #ff71ce; box-shadow: 0 0 10px #ff71ceaa; }
+  .type-normal { background: #ccc; color: #333; box-shadow: 0 0 8px #cccaa88; }
+  .type-fighting { background: #b5433c; box-shadow: 0 0 10px #b5433caa; }
+  .type-flying { background: #91a7ff; box-shadow: 0 0 10px #91a7ffaa; }
+  .type-poison { background: #b26bd7; box-shadow: 0 0 10px #b26bd7aa; }
+  .type-ground { background: #d9b46a; box-shadow: 0 0 10px #d9b46aaa; }
+  .type-rock { background: #a2885d; box-shadow: 0 0 10px #a2885daa; }
+  .type-bug { background: #a8b820; box-shadow: 0 0 10px #a8b820aa; }
+  .type-ghost { background: #5e548e; box-shadow: 0 0 10px #5e548eaa; }
+  .type-steel { background: #aaaabb; color: #333; box-shadow: 0 0 10px #aaaabbaa; }
+  .type-ice { background: #96d9d6; color: #333; box-shadow: 0 0 10px #96d9d6aa; }
+  .type-dragon { background: #7038f8; box-shadow: 0 0 10px #7038f8aa; }
+  .type-dark { background: #5a5366; box-shadow: 0 0 10px #5a5366aa; }
+  .type-fairy { background: #f4b1f4; color: #333; box-shadow: 0 0 10px #f4b1f4aa; }
+
+  /* Responsive adjustments */
+  @media (max-width: 600px) {
+    .cards-container {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1.2rem;
+    }
+    .scene {
+      width: 180px;
+      height: 255px;
+    }
+
+  #ttt-reset-btn {
+    background: #f7931a;
+    border: none;
+    color: #141e30;
+    font-weight: 700;
+    padding: 0.5rem 1.5rem;
+    border-radius: 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+}
+</style>
+</head>
+<body>
+  <main class="cards-container" aria-label="Pokémon cards 3D gallery">
+    <!-- Cards will be generated here dynamically -->
+  </main>
+
+<script>
+  // Correct Pokémon data IDs for images with unique id per Pokemon
+  const pokemons = [
+    {id:6, name:"Charizard", type:"fire", stats:{hp:78, attack:84, defense:78, spAtk:100, spDef:85, speed:100}},
+    {id:25, name:"Pikachu", type:"electric", stats:{hp:35, attack:55, defense:40, spAtk:50, spDef:50, speed:90}},
+    {id:1, name:"Bulbasaur", type:"grass", stats:{hp:45, attack:49, defense:49, spAtk:65, spDef:65, speed:45}},
+    {id:150, name:"Mewtwo", type:"psychic", stats:{hp:106, attack:110, defense:90, spAtk:154, spDef:90, speed:130}},
+    {id:94, name:"Gengar", type:"ghost", stats:{hp:60, attack:65, defense:60, spAtk:130, spDef:75, speed:110}},
+    {id:131, name:"Lapras", type:"water", stats:{hp:130, attack:85, defense:80, spAtk:85, spDef:95, speed:60}},
+    {id:143, name:"Snorlax", type:"normal", stats:{hp:160, attack:110, defense:65, spAtk:65, spDef:110, speed:30}},
+    {id:149, name:"Dragonite", type:"dragon", stats:{hp:91, attack:134, defense:95, spAtk:100, spDef:100, speed:80}},
+    {id:65, name:"Alakazam", type:"psychic", stats:{hp:55, attack:50, defense:45, spAtk:135, spDef:95, speed:120}},
+    {id:130, name:"Gyarados", type:"water", stats:{hp:95, attack:125, defense:79, spAtk:60, spDef:100, speed:81}},
+    {id:95, name:"Onix", type:"rock", stats:{hp:35, attack:45, defense:160, spAtk:30, spDef:45, speed:70}},
+    {id:12, name:"Butterfree", type:"bug", stats:{hp:60, attack:45, defense:50, spAtk:90, spDef:80, speed:70}},
+    {id:59, name:"Arcanine", type:"fire", stats:{hp:90, attack:110, defense:80, spAtk:100, spDef:80, speed:95}},
+    {id:39, name:"Jigglypuff", type:"fairy", stats:{hp:115, attack:45, defense:20, spAtk:45, spDef:25, speed:20}},
+    {id:68, name:"Machamp", type:"fighting", stats:{hp:90, attack:130, defense:80, spAtk:65, spDef:85, speed:55}},
+    {id:144, name:"Articuno", type:"ice", stats:{hp:90, attack:85, defense:100, spAtk:95, spDef:125, speed:85}},
+    {id:145, name:"Zapdos", type:"electric", stats:{hp:90, attack:90, defense:85, spAtk:125, spDef:90, speed:100}},
+    {id:146, name:"Moltres", type:"fire", stats:{hp:90, attack:100, defense:90, spAtk:125, spDef:85, speed:90}},
+    {id:123, name:"Scyther", type:"bug", stats:{hp:70, attack:110, defense:80, spAtk:55, spDef:80, speed:105}},
+    {id:214, name:"Heracross", type:"bug", stats:{hp:80, attack:125, defense:75, spAtk:40, spDef:95, speed:85}},
+    {id:248, name:"Tyranitar", type:"rock", stats:{hp:100, attack:134, defense:110, spAtk:95, spDef:100, speed:61}},
+    {id:448, name:"Lucario", type:"fighting", stats:{hp:70, attack:110, defense:70, spAtk:115, spDef:70, speed:90}},
+    {id:658, name:"Greninja", type:"water", stats:{hp:72, attack:95, defense:67, spAtk:103, spDef:71, speed:122}},
+    {id:392, name:"Infernape", type:"fire", stats:{hp:76, attack:104, defense:71, spAtk:104, spDef:71, speed:108}},
+  ];
+
+
+  // Normalize stats to percentage for bar width out of max 160 (higher than max hp value)
+  const maxStat = 160;
+
+  function createCard(pokemon) {
+    const front = document.createElement('div');
+    front.className = 'card__face card__face--front';
+    front.innerHTML = `
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png" 
+           alt="${pokemon.name}" />
+      <h2>${pokemon.name}</h2>
+      <div class="type type-${pokemon.type}">${pokemon.type}</div>
+    `;
+
+    const back = document.createElement('div');
+    back.className = 'card__face card__face--back';
+    back.innerHTML = `
+      <h3>Stats</h3>
+      <div class="stats">
+        <div class="stat">HP:<div class="stat-bar"><div class="stat-bar__fill" style="width: ${(pokemon.stats.hp/maxStat)*100}%;"></div></div></div>
+        <div class="stat">Attack:<div class="stat-bar"><div class="stat-bar__fill" style="width: ${(pokemon.stats.attack/maxStat)*100}%;"></div></div></div>
+        <div class="stat">Defense:<div class="stat-bar"><div class="stat-bar__fill" style="width: ${(pokemon.stats.defense/maxStat)*100}%;"></div></div></div>
+        <div class="stat">Sp. Atk:<div class="stat-bar"><div class="stat-bar__fill" style="width: ${(pokemon.stats.spAtk/maxStat)*100}%;"></div></div></div>
+        <div class="stat">Sp. Def:<div class="stat-bar"><div class="stat-bar__fill" style="width: ${(pokemon.stats.spDef/maxStat)*100}%;"></div></div></div>
+        <div class="stat">Speed:<div class="stat-bar"><div class="stat-bar__fill" style="width: ${(pokemon.stats.speed/maxStat)*100}%;"></div></div></div>
+      </div>
+    `;
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-pressed', 'false');
+    card.setAttribute('aria-label', `Pokémon card for ${pokemon.name}. Press to flip.`);
+
+    card.appendChild(front);
+    card.appendChild(back);
+
+    card.addEventListener('click', () => {
+      card.classList.toggle('is-flipped');
+      card.setAttribute('aria-pressed', card.classList.contains('is-flipped'));
+    });
+
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault();
+        card.classList.toggle('is-flipped');
+        card.setAttribute('aria-pressed', card.classList.contains('is-flipped'));
+      }
+    });
+
+    const scene = document.createElement('div');
+    scene.className = 'scene';
+    scene.appendChild(card);
+
+    return scene;
+  }
+
+  const container = document.querySelector('.cards-container');
+
+  pokemons.forEach(pokemon => {
+    container.appendChild(createCard(pokemon));
+  });
+</script>
+</body>
+</html>
+
